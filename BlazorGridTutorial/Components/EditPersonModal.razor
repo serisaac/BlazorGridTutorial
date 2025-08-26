@@ -1,0 +1,60 @@
+﻿@using BlazorGridTutorial.Data
+
+@if (Person != null)
+{
+    <!-- Fondo oscuro semitransparente -->
+    <div class="modal-backdrop show"></div>
+
+    <!-- Contenido del Modal -->
+    <div class="modal fade show" style="display: block;" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Persona</h5>
+                    <button type="button" class="btn-close" @onclick="Cancel"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input class="form-control" @bind="Person.FirstName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Apellido</label>
+                        <input class="form-control" @bind="Person.LastName" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancelar</button>
+                    <button type="button" class="btn btn-primary" @onclick="Save">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Person? Person { get; set; }
+
+    // Evento para notificar al componente padre que se guardaron los cambios
+    [Parameter]
+    public EventCallback<Person> OnSave { get; set; }
+
+    // Evento para notificar que se canceló la edición
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task Save()
+    {
+        if (Person != null)
+        {
+            await OnSave.InvokeAsync(Person);
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+}

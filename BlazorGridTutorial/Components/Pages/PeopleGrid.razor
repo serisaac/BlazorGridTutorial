@@ -1,0 +1,107 @@
+﻿@page "/people-grid"
+
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using BlazorGridTutorial.Data
+@using BlazorGridTutorial.Components
+@inject IJSRuntime JSRuntime
+
+<h3>Lista de personas</h3>
+
+@if (people == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <div class="grid-container">
+        <QuickGrid Items="@people" Pagination="@pagination">
+            <PropertyColumn Property="@(p => p.Id)" Title="ID" Sortable="true" />
+            <PropertyColumn Property="@(p => p.FirstName)" Title="Nombre" Sortable="true" />
+            <PropertyColumn Property="@(p => p.LastName)" Title="Apellido" Sortable="true" />
+            <TemplateColumn Title="Acciones">
+                <button class="btn btn-sm btn-primary" @onclick="() => StartEditPerson(context)">
+                    Editar
+                </button>
+
+                @* 2. Añadimos el nuevo botón de Eliminar *@
+                <button class="btn btn-sm btn-danger ms-2" @onclick="() => DeletePerson(context)">
+                    Eliminar
+                </button>
+            </TemplateColumn>
+        </QuickGrid>
+
+        <Paginator State="@pagination" />
+    </div>
+}
+
+<EditPersonModal Person="personToEdit" OnSave="SaveChanges" OnCancel="CancelEdit" />
+
+
+@code {
+    private List<Person>? allPeople;
+    private IQueryable<Person>? people;
+    private PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
+
+    // Variable para guardar la persona que estamos editando actualmente
+    private Person? personToEdit;
+
+    protected override void OnInitialized()
+    {
+        allPeople = new List<Person>
+        {
+            new Person { Id = 1, FirstName = "Nancy", LastName = "Davolio", HireDate = new DateOnly(2022, 1, 15) },
+            new Person { Id = 2, FirstName = "Andrew", LastName = "Fuller", HireDate = new DateOnly(2022, 3, 20) },
+            new Person { Id = 3, FirstName = "Janet", LastName = "Leverling", HireDate = new DateOnly(2023, 5, 10) },
+            new Person { Id = 4, FirstName = "Margaret", LastName = "Peacock", HireDate = new DateOnly(2021, 8, 1) },
+            new Person { Id = 5, FirstName = "Steven", LastName = "Buchanan", HireDate = new DateOnly(2023, 10, 17) },
+            new Person { Id = 6, FirstName = "Michael", LastName = "Suyama", HireDate = new DateOnly(2022, 7, 2) }
+        };
+        people = allPeople.AsQueryable();
+    }
+
+    // Este método ahora asigna la persona al 'personToEdit', lo que hará que el modal aparezca
+    private void StartEditPerson(Person person)
+    {
+        // Creamos una copia para no modificar la lista original hasta guardar
+        personToEdit = new Person { Id = person.Id, FirstName = person.FirstName, LastName = person.LastName, HireDate = person.HireDate };
+    }
+
+    // Este método se ejecuta cuando se hace clic en "Guardar Cambios" en el modal
+    private void SaveChanges(Person updatedPerson)
+    {
+        var originalPerson = allPeople?.FirstOrDefault(p => p.Id == updatedPerson.Id);
+        if (originalPerson != null && allPeople != null)
+        {
+            originalPerson.FirstName = updatedPerson.FirstName;
+            originalPerson.LastName = updatedPerson.LastName;
+
+            // Refrescamos la fuente de datos del grid
+            people = allPeople.AsQueryable();
+        }
+
+        // Ocultamos el modal poniendo la variable a null
+        personToEdit = null;
+    }
+
+    // Este método se ejecuta al cancelar y oculta el modal
+    private void CancelEdit()
+    {
+        personToEdit = null;
+    }
+
+    private async Task DeletePerson(Person personToDelete)
+    {
+        // Usamos JSRuntime para mostrar una ventana de confirmación nativa del navegador
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar a {personToDelete.FirstName} {personToDelete.LastName}?");
+
+        if (confirmed && allPeople != null)
+        {
+            // Si el usuario hizo clic en "Aceptar", eliminamos la persona de la lista
+            allPeople.Remove(personToDelete);
+
+            // Refrescamos la fuente de datos del grid para que se actualice la vista
+            people = allPeople.AsQueryable();
+        }
+    }
+}

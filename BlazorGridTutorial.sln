@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGridTutorial", "BlazorGridTutorial\BlazorGridTutorial.csproj", "{BAD7F6C2-1443-415A-BE41-1BDA5AD33D00}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BAD7F6C2-1443-415A-BE41-1BDA5AD33D00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAD7F6C2-1443-415A-BE41-1BDA5AD33D00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAD7F6C2-1443-415A-BE41-1BDA5AD33D00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAD7F6C2-1443-415A-BE41-1BDA5AD33D00}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {78E46675-2AD1-45EA-8910-04946D9F2E32}
+	EndGlobalSection
+EndGlobal
