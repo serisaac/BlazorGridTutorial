@@ -1,3 +1,4 @@
+using Blazored.Toast;
 using BlazorGridTutorial.Components;
 using BlazorGridTutorial.Data;
 
@@ -8,6 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddDbContext<ApplicationDbContext>();
 builder.Services.AddQuickGridEntityFrameworkAdapter();
+builder.Services.AddBlazoredToast();
 
 var app = builder.Build();
 

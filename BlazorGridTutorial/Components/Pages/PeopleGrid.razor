@@ -7,12 +7,18 @@
 @using Microsoft.EntityFrameworkCore
 @inject IJSRuntime JSRuntime
 @inject ApplicationDbContext DbContext
+@inject IToastService ToastService
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Lista de personas desde la Base de Datos</h3>
     <button class="btn btn-success" @onclick="StartAddPerson">
         <span class="bi bi-plus-circle-fill me-2"></span>Añadir Nueva Persona
     </button>
+</div>
+
+<div class="mb-3">
+    <input type="text" class="form-control w-50" placeholder="Buscar por nombre o apellido..."
+           value="@searchQuery" @oninput="OnSearchInput" />
 </div>
 
 @if (people == null)
@@ -36,20 +42,27 @@ else
     </div>
 }
 
-@* El componente del Modal se llama aquí, por separado del grid *@
 <EditPersonModal Person="personToEdit" OnSave="SaveChanges" OnCancel="CancelEdit" />
+
 
 @code {
     private IQueryable<Person>? people;
     private PaginationState pagination = new PaginationState { ItemsPerPage = 3 };
     private Person? personToEdit;
 
+    private string searchQuery = string.Empty;
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        await LoadGridData();
+    }
+
     protected override async Task OnInitializedAsync()
     {
         await LoadGridData();
     }
 
-    // AQUÍ ESTÁ EL MÉTODO QUE FALTABA
     private void StartAddPerson()
     {
         personToEdit = new Person();
@@ -69,10 +82,12 @@ else
 
     private async Task SaveChanges(Person updatedPerson)
     {
+        string successMessage;
         if (updatedPerson.Id == 0)
         {
             updatedPerson.HireDate = DateOnly.FromDateTime(DateTime.Now);
             await DbContext.People.AddAsync(updatedPerson);
+            successMessage = $"'{updatedPerson.FirstName}' ha sido añadido con éxito.";
         }
         else
         {
@@ -83,8 +98,10 @@ else
                 personInDb.LastName = updatedPerson.LastName;
                 personInDb.BirthDate = updatedPerson.BirthDate;
             }
+            successMessage = $"'{updatedPerson.FirstName}' ha sido actualizado con éxito.";
         }
         await DbContext.SaveChangesAsync();
+        ToastService.ShowSuccess(successMessage);
         await LoadGridData();
         personToEdit = null;
     }
@@ -101,13 +118,25 @@ else
         {
             DbContext.People.Remove(personToDelete);
             await DbContext.SaveChangesAsync();
+            ToastService.ShowSuccess($"'{personToDelete.FirstName}' ha sido eliminado.");
             await LoadGridData();
         }
     }
 
     private async Task LoadGridData()
     {
-        people = DbContext.People.AsQueryable();
+        var query = DbContext.People.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            query = query.Where(p =>
+    (p.FirstName != null && p.FirstName.ToLower().Contains(searchQuery.ToLower())) ||
+    (p.LastName != null && p.LastName.ToLower().Contains(searchQuery.ToLower())));
+        }
+
+        var filteredData = await query.ToListAsync();
+        people = filteredData.AsQueryable();
+
         StateHasChanged();
     }
 }

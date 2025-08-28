@@ -6,29 +6,40 @@
     <div class="modal fade show" style="display: block;" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    @* 1. El título ahora es una variable dinámica *@
-                    <h5 class="modal-title">@ModalTitle</h5>
-                    <button type="button" class="btn-close" @onclick="Cancel"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nombre</label>
-                        <input class="form-control" @bind="Person.FirstName" />
+                <EditForm Model="@Person" OnValidSubmit="@Save">
+                    <DataAnnotationsValidator />
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">@ModalTitle</h5>
+                        <button type="button" class="btn-close" @onclick="Cancel"></button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Apellido</label>
-                        <input class="form-control" @bind="Person.LastName" />
+
+                    <div class="modal-body">
+                        @* Ya no hay un resumen de errores aquí arriba *@
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <InputText class="form-control" @bind-Value="Person.FirstName" />
+                            <ValidationMessage For="@(() => Person.FirstName)" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Apellido</label>
+                            <InputText class="form-control" @bind-Value="Person.LastName" />
+                            <ValidationMessage For="@(() => Person.LastName)" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Nacimiento</label>
+                            <InputDate class="form-control" @bind-Value="Person.BirthDate" />
+                            <ValidationMessage For="@(() => Person.BirthDate)" />
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Fecha de Nacimiento</label>
-                        <input type="date" class="form-control" @bind="Person.BirthDate" />
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancelar</button>
-                    <button type="button" class="btn btn-primary" @onclick="Save">Guardar Cambios</button>
-                </div>
+
+                </EditForm>
             </div>
         </div>
     </div>
@@ -44,16 +55,17 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
-    // 2. Propiedad para almacenar el título del modal
     private string ModalTitle { get; set; } = string.Empty;
 
-    // 3. Este método se ejecuta cada vez que los parámetros cambian (ej. cuando se muestra el modal)
     protected override void OnParametersSet()
     {
         if (Person != null)
         {
-            // Decidimos el título basándonos en si la persona es nueva (ID=0) o existente
             ModalTitle = Person.Id == 0 ? "Añadir Nueva Persona" : "Editar Persona";
+            if (Person.Id == 0 && Person.BirthDate == null)
+            {
+                Person.BirthDate = DateOnly.FromDateTime(DateTime.Now);
+            }
         }
     }
 
@@ -69,5 +81,4 @@
     {
         await OnCancel.InvokeAsync();
     }
-
 }
